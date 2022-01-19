@@ -1,0 +1,57 @@
+# vim: set syntax=yaml:
+
+version: '3.6'
+
+networks:
+  internal_network: 
+
+volumes:    
+  postgres_data:
+
+services:
+
+  'postgres':
+    image: postgis/postgis:10-3.0-alpine
+    networks:
+      internal_network:
+        aliases:
+        - 'postgres-1'
+        - 'postgres-1-opertusmundi'
+    volumes:  
+    - type: volume
+      source: postgres_data
+      target: /var/lib/postgresql/data
+    - type: bind
+      source: ./files/postgres/db-init-scripts/
+      target: /docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_POSTGRES_PASSWORD}
+      OPERTUSMUNDI_PASSWORD: ${POSTGRES_OPERTUSMUNDI_PASSWORD}
+    ports: ['30500:5432']
+
+  'catalogueapi':
+    image: opertusmundi/catalogueapi:0.0.2
+    networks:
+      internal_network:
+    volumes:
+    - type: bind
+      source: ./logs/catalogueapi
+      target: /var/local/catalogueapi/logs
+    - type: bind
+      source: ./secrets/catalogueapi/secret_key
+      target: /var/local/catalogueapi/secret_key
+      read_only: true
+    environment:
+      SERVER_NAME:
+      SQLALCHEMY_DATABASE_URI: >-
+        postgresql://opertusmundi:${POSTGRES_OPERTUSMUNDI_PASSWORD}@postgres-1-opertusmundi:5432/catalogueapi
+      SQLALCHEMY_TRACK_MODIFICATIONS: "False"
+      DATABASE_INITIALIZE_SCHEMA: "False"
+      ERROR_404_HELP: "False"
+      RESTX_MASK_SWAGGER: "False"
+      RESTX_VALIDATE: "True"
+      SWAGGER_UI_DOC_EXPANSION: list
+      FLASK_ENV: production
+      FLASK_DEBUG: "False"
+      TZ: Europe/Athens
+    ports: ['30505:5000']
