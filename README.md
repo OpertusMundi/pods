@@ -22,6 +22,10 @@ secrets/
 
 ```
 
+A JWT secret can be generated:
+
+    dd if=/dev/urandom bs=1 count=60 | base64 -w 0 > secrets/jwt-secret
+
 ## 2. Setup
 
 
