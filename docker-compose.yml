@@ -46,7 +46,7 @@ services:
       SQLALCHEMY_DATABASE_URI: >-
         postgresql://opertusmundi:${POSTGRES_OPERTUSMUNDI_PASSWORD}@postgres-1-opertusmundi:5432/catalogueapi
       SQLALCHEMY_TRACK_MODIFICATIONS: "False"
-      DATABASE_INITIALIZE_SCHEMA: "False"
+      DATABASE_INITIALIZE_SCHEMA: "True"
       ERROR_404_HELP: "False"
       RESTX_MASK_SWAGGER: "False"
       RESTX_VALIDATE: "True"
