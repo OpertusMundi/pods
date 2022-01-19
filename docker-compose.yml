@@ -39,8 +39,35 @@ services:
       POSTGRES_PASSWORD_FILE: /secrets/postgres-password
     ports: ['30500:5432']
 
+  'flyway':
+    image: flyway/flyway:7.7
+    command: ['info']
+    depends_on:
+    - 'postgres'
+    networks:
+      internal_network: {}
+    volumes:
+    - type: 'bind'
+      source: ./secrets/flyway/secret.conf
+      target: /flyway/conf/secret.conf
+      read_only: true
+    - type: 'bind'
+      source: ./cli/src/main/resources/db/migration
+      target: /flyway/sql
+      read_only: true
+    environment:
+      FLYWAY_CONFIG_FILES: /flyway/conf/secret.conf
+      FLYWAY_USER: opertusmundi
+      FLYWAY_URL: jdbc:postgresql://postgres-1:5432/opertusmundi?
+      FLYWAY_SCHEMAS: public,web
+      FLYWAY_DEFAULT_SCHEMA: public
+      FLYWAY_BASELINE_VERSION: "1_0_0"
+      FLYWAY_BASELINE_ON_MIGRATE: 'true'
+
   'catalogueapi':
     image: opertusmundi/catalogueapi:0.0.2
+    depends_on:
+    - 'postgres'
     networks:
       internal_network: {}
     volumes:
@@ -67,6 +94,8 @@ services:
 
   'bpm_engine':
     image: opertusmundi/bpm-engine:1.0.0
+    depends_on:
+    - 'postgres'
     networks:
       internal_network:
         aliases:
@@ -95,6 +124,9 @@ services:
 
   'bpm_worker':
     image: opertusmundi/bpm-worker:1.0.0
+    depends_on:
+    - 'postgres'
+    - 'bpm_engine'
     networks:
       internal_network:
         aliases:
