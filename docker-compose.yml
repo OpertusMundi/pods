@@ -65,7 +65,7 @@ services:
       FLYWAY_BASELINE_ON_MIGRATE: 'true'
 
   'catalogueapi':
-    image: opertusmundi/catalogueapi:0.0.2
+    image: opertusmundi/catalogueapi:0.0.3
     depends_on:
     - 'postgres'
     networks:
@@ -78,9 +78,15 @@ services:
       source: ./secrets/catalogueapi/secret_key
       target: /var/local/catalogueapi/secret_key
       read_only: true
+    - type: bind
+      source: ./secrets/postgres/opertusmundi-password
+      target: /secrets/database-password
+      read_only: true
     environment:
-      SERVER_NAME:
-      SQLALCHEMY_DATABASE_URI: postgresql://opertusmundi@postgres-1:5432/catalogueapi
+      SERVER_NAME: ""
+      DATABASE_URL: postgresql://postgres-1:5432/catalogueapi
+      DATABASE_USERNAME: opertusmundi
+      DATABASE_PASSWORD_FILE: /secrets/database-password
       SQLALCHEMY_TRACK_MODIFICATIONS: "False"
       DATABASE_INITIALIZE_SCHEMA: "True"
       ERROR_404_HELP: "False"
@@ -102,8 +108,8 @@ services:
         - 'bpm-server'
     volumes:
     - type: bind
-      source: ./secrets/postgres
-      target: /secrets/postgres
+      source: ./secrets/postgres/opertusmundi-password
+      target: /secrets/database-password
       read_only: true
     - type: bind
       source: ./secrets/camunda/
@@ -117,7 +123,7 @@ services:
         -server -Xmx768m -Xms128m -Djava.security.egd=file:///dev/urandom
       DATABASE_URL: jdbc:postgresql://postgres-1:5432/camunda
       DATABASE_USERNAME: opertusmundi
-      DATABASE_PASSWORD_FILE: /secrets/postgres/opertusmundi-password
+      DATABASE_PASSWORD_FILE: /secrets/database-password
       CAMUNDA_ADMIN_USERNAME: admin
       CAMUNDA_ADMIN_PASSWORD_FILE: /secrets/camunda/admin-password
     ports: ['31080:8000']
@@ -133,8 +139,8 @@ services:
         - 'bpm-worker'
     volumes:
     - type: bind
-      source: ./secrets/postgres
-      target: /secrets/postgres
+      source: ./secrets/postgres/opertusmundi-password
+      target: /secrets/database-password
       read_only: true
     - type: bind
       source: ./secrets/mangopay-client-password
@@ -178,7 +184,7 @@ services:
       MARKETPLACE_URL: ${MARKETPLACE_URL}
       DATABASE_URL: jdbc:postgresql://postgres-1:5432/opertusmundi
       DATABASE_USERNAME: opertusmundi
-      DATABASE_PASSWORD_FILE: /secrets/postgres/opertusmundi-password
+      DATABASE_PASSWORD_FILE: /secrets/database-password
       JWT_SECRET_FILE: /secrets/jwt-secret
       BPM_REST_BASE_URL: http://bpm-server:8000/engine-rest
       BPM_REST_USERNAME: admin
