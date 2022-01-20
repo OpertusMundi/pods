@@ -14,6 +14,8 @@ volumes:
   files_temp: {}
   ingest_input: {}
   profile_input: {}
+  profile_temp: {}
+  profile_output: {}
 
 services:
 
@@ -202,4 +204,48 @@ services:
       PID_BASE_URL: http://pid:5000/
       PROFILE_BASE_URL: http://profile:5000/
       ELASTICSEARCH_BASE_URL: http://elasticsearch-1:9200
+  
+  'profile':
+    image: opertusmundi/profile:1.0.0
+    depends_on:
+    - 'postgres'
+    networks:
+      internal_network: {}
+    volumes:
+    - type: bind
+      source: ./logs/profile
+      target: /var/local/geoprofile/logs
+    - type: volume
+      source: profile_input
+      target: /var/local/geoprofile/input
+      read_only: true
+    - type: volume
+      source: profile_output
+      target: /var/local/geoprofile/output
+    - type: volume
+      source: profile_temp
+      target: /var/local/geoprofile/temp
+    - type: bind
+      source: ./secrets/postgres/opertusmundi-password
+      target: /secrets/database-password
+      read_only: true
+    - type: bind
+      source: ./secrets/profile/secret_key
+      target: /secrets/secret_key
+      read_only: true
+    environment:
+      INPUT_DIR: /var/local/geoprofile/input
+      OUTPUT_DIR: /var/local/geoprofile/output
+      TEMPDIR: /var/local/geoprofile/temp
+      FLASK_ENV: production
+      FLASK_DEBUG: "False"
+      CORS: "*"
+      PYTHONUNBUFFERED: "1"
+      DB_ENGINE: postgresql
+      DB_HOST: postgres-1
+      DB_PORT: '5432'
+      DB_USER: opertusmundi
+      DB_NAME: profile
+      DB_PASS_FILE: /secrets/database-password
+    ports: ['30515:5000']
 
