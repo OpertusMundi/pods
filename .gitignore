@@ -4,4 +4,8 @@
 
 .env
 
+*.swp
+*.log
+
+.elastic-setup-*
 

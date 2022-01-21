@@ -7,6 +7,8 @@ networks:
 
 volumes:    
   postgres_data: {}
+  elasticsearch_data: {}
+  elasticsearch_snapshots: {}
   files_assets: {}
   files_contracts: {}
   files_drafts: {}
@@ -66,6 +68,34 @@ services:
       FLYWAY_BASELINE_VERSION: "1_0_0"
       FLYWAY_BASELINE_ON_MIGRATE: 'true'
 
+  'elasticsearch':
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    networks:
+      internal_network: {}
+    environment:
+      ES_JAVA_OPTS: >-
+         -Xms1024m -Xmx1024m
+      "cluster.name": opertusmundi
+      "discovery.type": single-node
+      "bootstrap.memory_lock": "false"
+      "path.repo": /snapshots
+    ulimits:
+      memlock: 
+        soft: -1 
+        hard: -1 
+      nproc: 65535
+      nofile: 
+        soft: 20000 
+        hard: 65535
+    volumes:
+    - type: volume
+      source: elasticsearch_data
+      target: /usr/share/elasticsearch/data
+    - type: volume
+      source: elasticsearch_snapshots
+      target: /snapshots
+    ports: ['30200:9200']
+
   'catalogueapi':
     image: opertusmundi/catalogueapi:0.0.3
     depends_on:
@@ -77,7 +107,7 @@ services:
       source: ./logs/catalogueapi
       target: /var/local/catalogueapi/logs
     - type: bind
-      source: ./secrets/catalogueapi/secret_key
+      source: ./secrets/key
       target: /var/local/catalogueapi/secret_key
       read_only: true
     - type: bind
@@ -230,7 +260,7 @@ services:
       target: /secrets/database-password
       read_only: true
     - type: bind
-      source: ./secrets/profile/secret_key
+      source: ./secrets/key
       target: /secrets/secret_key
       read_only: true
     environment:
