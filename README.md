@@ -64,5 +64,9 @@ Bring profiling service up:
     
     docker-compose up -d profile
 
+Bring persistent-identifier service (PID) up:
+
+    docker-compose up -d pid
+    
 
 __Todo__
