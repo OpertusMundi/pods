@@ -234,7 +234,9 @@ services:
       PID_BASE_URL: http://pid:5000/
       PROFILE_BASE_URL: http://profile:5000/
       ELASTICSEARCH_BASE_URL: http://elasticsearch-1:9200
-  
+    deploy:
+      replicas: 2
+
   'profile':
     image: opertusmundi/profile:1.0.0
     depends_on:
