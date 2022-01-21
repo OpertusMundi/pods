@@ -296,3 +296,37 @@ services:
       DATABASE_PASSWORD_FILE: /secrets/database-password
     ports: ['30525:8000']
 
+  'mailer':
+    image: opertusmundi/mailer:1.0.0
+    depends_on:
+    - 'postgres'
+    networks:
+      internal_network: {}
+    volumes:
+    - type: bind
+      source: ./secrets/jwt-secret
+      target: /secrets/jwt-secret
+      read_only: true
+    - type: bind
+      source: ./secrets/postgres/opertusmundi-password
+      target: /secrets/database-password
+      read_only: true
+    - type: bind
+      source: ./secrets/mailer/mail-password
+      target: /secrets/mail-password
+      read_only: true
+    - type: bind
+      source: ./logs/mailer
+      target: /app/logs
+    environment:
+      JAVA_OPTS: >-
+        -server -Xmx512m -Xms128m -Djava.security.egd=file:///dev/urandom
+      JWT_SECRET_FILE: /secrets/jwt-secret
+      MAIL_HOST: ${MAIL_HOST:-localhost} 
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD_FILE: /secrets/mail-password
+      DATABASE_URL: jdbc:postgresql://postgres-1:5432/opertusmundi
+      DATABASE_USERNAME: opertusmundi
+      DATABASE_PASSWORD_FILE: /secrets/database-password
+ 

@@ -3,8 +3,8 @@ SHELL=/bin/bash
 all:
 
 prepare-dirs:
-	mkdir -v -p secrets/{postgres,camunda,catalogueapi,flyway,profile}
-	mkdir -v -p logs/{catalogueapi,api-gateway,bpm-engine,bpm-worker,profile,pid}
+	mkdir -v -p secrets/{postgres,camunda,catalogueapi,flyway,profile,mailer,messenger}
+	mkdir -v -p logs/{catalogueapi,api-gateway,bpm-engine,bpm-worker,profile,pid,mailer,messenger}
 
 generate-signing-key:
 	dd if=/dev/urandom bs=1 count=18 | base64 -w 0 > secrets/key    

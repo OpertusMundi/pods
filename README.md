@@ -18,6 +18,7 @@ Prepare the following files into `secrets` folder:
    * `secrets/postgres/postgres-password`: password for PostgreSQL superuser
    * `secrets/postgres/opertusmundi-password`: password for PostgreSQL normal user `opertusmundi` who owns all databases
    * `secrets/camunda/admin-password`: admin password for Camunda BPM server (used for both UI-based administration and REST API)
+   * `secrets/mailer/mail-password`: password for the SMTP server (see also `MAIL_*` environment variables inside `.env`)
 
 Generate a key to be used for signing cookies and JWT tokens:
 
