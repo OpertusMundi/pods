@@ -38,8 +38,6 @@ This step is needed because data volumes (i.e. named volumes managed by Docker) 
 
 ## 2. Setup
 
-### 2.a. 
-
 Bring PostgreSQL database up (all needed databases will be created on the first time):
 
     docker-compose up -d postgres
@@ -76,6 +74,10 @@ Bring persistent-identifier service (PID) up:
 Bring mailing service up:
 
     docker-compose up -d mailer
+
+Bring message service up:
+
+    docker-compose up -d messenger
 
 Bring api-gateway service up:
 

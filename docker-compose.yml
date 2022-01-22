@@ -51,11 +51,11 @@ services:
     networks:
       internal_network: {}
     volumes:
-    - type: 'bind'
+    - type: bind
       source: ./secrets/flyway/secret.conf
       target: /flyway/conf/secret.conf
       read_only: true
-    - type: 'bind'
+    - type: bind
       source: ./cli/src/main/resources/db/migration
       target: /flyway/sql
       read_only: true
@@ -65,6 +65,32 @@ services:
       FLYWAY_URL: jdbc:postgresql://postgres-1:5432/opertusmundi?
       FLYWAY_SCHEMAS: public,web
       FLYWAY_DEFAULT_SCHEMA: public
+      FLYWAY_BASELINE_VERSION: "1_0_0"
+      FLYWAY_BASELINE_ON_MIGRATE: 'true'
+
+  'messenger_flyway':
+    image: flyway/flyway:7.7
+    command: ['info']
+    depends_on:
+    - 'postgres'
+    networks:
+      internal_network: {}
+    volumes:
+    - type: bind
+      source: ./secrets/flyway/secret.conf
+      target: /flyway/conf/secret.conf
+      read_only: true
+    - type: bind
+      source: ./message-service/src/main/resources/db/migration
+      target: /flyway/sql
+      read_only: true
+    environment:
+      FLYWAY_TABLE: _schema_version
+      FLYWAY_CONFIG_FILES: /flyway/conf/secret.conf
+      FLYWAY_USER: opertusmundi
+      FLYWAY_URL: jdbc:postgresql://postgres-1:5432/opertusmundi?
+      FLYWAY_SCHEMAS: messaging
+      FLYWAY_DEFAULT_SCHEMA: messaging
       FLYWAY_BASELINE_VERSION: "1_0_0"
       FLYWAY_BASELINE_ON_MIGRATE: 'true'
 
@@ -331,7 +357,33 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres-1:5432/opertusmundi
       DATABASE_USERNAME: opertusmundi
       DATABASE_PASSWORD_FILE: /secrets/database-password
- 
+
+  'messenger':
+    image: opertusmundi/messenger:1.0.0
+    depends_on:
+    - 'postgres'
+    networks:
+      internal_network: {}
+    volumes:
+    - type: bind
+      source: ./secrets/jwt-secret
+      target: /secrets/jwt-secret
+      read_only: true
+    - type: bind
+      source: ./secrets/postgres/opertusmundi-password
+      target: /secrets/database-password
+      read_only: true
+    - type: bind
+      source: ./logs/messenger/
+      target: /app/logs
+    environment:
+      JAVA_OPTS: >-
+        -server -Xmx512m -Xms128m -Djava.security.egd=file:///dev/urandom
+      JWT_SECRET_FILE: /secrets/jwt-secret
+      DATABASE_URL: jdbc:postgresql://postgres-1:5432/opertusmundi
+      DATABASE_USERNAME: opertusmundi
+      DATABASE_PASSWORD_FILE: /secrets/database-password
+
   'api_gateway':
     image: opertusmundi/api-gateway:1.0.0
     depends_on:
@@ -451,5 +503,4 @@ services:
     environment:
       []
     ports: ['8443:443']
-
 

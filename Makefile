@@ -40,10 +40,8 @@ fix-ownership-of-data-volumes: \
 	docker-compose run --rm -u0 --no-deps -- profile chown 1000:1000 output
 
 database-migrate:
+	docker-compose run --rm messenger_flyway migrate
 	docker-compose run --rm flyway migrate
-
-database-info:
-	docker-compose run --rm flyway info
 
 elasticsearch-setup: \
   .elasticsearch-setup-pipeline-auto_timestamp_pipeline \

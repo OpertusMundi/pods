@@ -1,3 +1,6 @@
 [submodule "cli"]
 	path = cli
 	url = https://github.com/OpertusMundi/cli.git
+[submodule "message-service"]
+	path = message-service
+	url = https://github.com/OpertusMundi/message-service.git
