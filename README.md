@@ -19,10 +19,11 @@ Prepare the following files into `secrets` folder:
    * `secrets/postgres/opertusmundi-password`: password for PostgreSQL normal user `opertusmundi` who owns all databases
    * `secrets/camunda/admin-password`: admin password for Camunda BPM server (used for both UI-based administration and REST API)
    * `secrets/mailer/mail-password`: password for the SMTP server (see also `MAIL_*` environment variables inside `.env`)
+   * `secrets/jupyterhub-access-token`: access token for the administrator of JupyterHub (or an empty file if no JupyterHub is present)
 
-Generate a key to be used for signing cookies and JWT tokens:
+Generate keys (an HMAC key for signing cookies and JWT tokens, and an RSA key for signing contracts):
 
-    make generate-signing-key
+    make generate-signing-keys
 
 Generate for the security-sensitive part of Flyway configuration:
 

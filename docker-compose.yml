@@ -41,7 +41,7 @@ services:
       read_only: true
     environment:
       POSTGRES_PASSWORD_FILE: /secrets/postgres-password
-    ports: ['30500:5432']
+    ports: ['127.0.0.1:30500:5432']
 
   'flyway':
     image: flyway/flyway:7.7
@@ -94,7 +94,7 @@ services:
     - type: volume
       source: elasticsearch_snapshots
       target: /snapshots
-    ports: ['30200:9200']
+    ports: ['127.0.0.1:30200:9200']
 
   'catalogueapi':
     image: opertusmundi/catalogueapi:0.0.3
@@ -128,7 +128,7 @@ services:
       FLASK_ENV: production
       FLASK_DEBUG: "False"
       TZ: Europe/Athens
-    ports: ['30505:5000']
+    ports: ['127.0.0.1:30505:5000']
 
   'bpm_engine':
     image: opertusmundi/bpm-engine:1.0.0
@@ -158,7 +158,7 @@ services:
       DATABASE_PASSWORD_FILE: /secrets/database-password
       CAMUNDA_ADMIN_USERNAME: admin
       CAMUNDA_ADMIN_PASSWORD_FILE: /secrets/camunda/admin-password
-    ports: ['31080:8000']
+    ports: ['127.0.0.1:31080:8000']
 
   'bpm_worker':
     image: opertusmundi/bpm-worker:1.0.0
@@ -233,7 +233,7 @@ services:
       MESSENGER_BASE_URL: http://messenger:8110/
       PID_BASE_URL: http://pid:5000/
       PROFILE_BASE_URL: http://profile:5000/
-      ELASTICSEARCH_BASE_URL: http://elasticsearch-1:9200
+      ELASTICSEARCH_BASE_URL: http://elasticsearch:9200
     deploy:
       replicas: 2
 
@@ -279,7 +279,7 @@ services:
       DB_USER: opertusmundi
       DB_NAME: profile
       DB_PASS_FILE: /secrets/database-password
-    ports: ['30515:5000']
+    ports: ['127.0.0.1:30515:5000']
 
   'pid':
     image: opertusmundi/pid:0.1.0
@@ -296,7 +296,7 @@ services:
       DATABASE_URL: postgresql://postgres-1:5432/pid
       DATABASE_USERNAME: opertusmundi
       DATABASE_PASSWORD_FILE: /secrets/database-password
-    ports: ['30525:8000']
+    ports: ['127.0.0.1:30525:8000']
 
   'mailer':
     image: opertusmundi/mailer:1.0.0
@@ -332,3 +332,103 @@ services:
       DATABASE_USERNAME: opertusmundi
       DATABASE_PASSWORD_FILE: /secrets/database-password
  
+  'api_gateway':
+    image: opertusmundi/api-gateway:1.0.0
+    depends_on:
+    - 'postgres'
+    - 'elasticsearch'
+    networks:
+      internal_network:
+        aliases:
+        - 'api'
+    volumes:
+    - type: bind
+      source: ./logs/api-gateway
+      target: /app/logs
+    - type: bind
+      source: ./secrets/postgres/opertusmundi-password
+      target: /secrets/database-password
+      read_only: true
+    - type: bind
+      source: ./secrets/jwt-secret
+      target: /secrets/jwt-secret
+      read_only: true
+    - type: bind
+      source: ./secrets/mangopay-client-password
+      target: /secrets/mangopay-client-password
+      read_only: true
+    - type: bind
+      source: ./secrets/camunda/admin-password
+      target: /secrets/camunda-admin-password
+      read_only: true
+    - type: bind
+      source: ./secrets/jupyterhub-access-token
+      target: /secrets/jupyterhub-access-token
+      read_only: true
+    - type: bind
+      source: ./secrets/signatory-keystore
+      target: /secrets/signatory-keystore
+      read_only: true
+    - type: bind
+      source: ./secrets/signatory-keystore-password
+      target: /secrets/signatory-keystore-password
+      read_only: true
+    - type: volume
+      source: files_assets
+      target: /var/local/opertusmundi/files/assets
+    - type: volume
+      source: files_contracts
+      target: /var/local/opertusmundi/files/contracts
+    - type: volume
+      source: files_drafts
+      target: /var/local/opertusmundi/files/drafts
+    - type: volume
+      source: files_users
+      target: /var/local/opertusmundi/files/users
+    - type: volume
+      source: files_temp
+      target: /var/local/opertusmundi/files/temp
+    - type: volume
+      source: ingest_input
+      target: /var/local/opertusmundi/ingest/input
+    - type: volume
+      source: profile_input
+      target: /var/local/opertusmundi/profile/input
+    environment:
+      JAVA_OPTS: >-
+        -server -Xmx1024m -Xms256m -Djava.security.egd=file:///dev/urandom
+      PUBLIC_URL: ${MARKETPLACE_URL}
+      SECURITY_CSRF_ENABLED: 'true'
+      DATABASE_URL: jdbc:postgresql://postgres-1:5432/opertusmundi
+      DATABASE_USERNAME: opertusmundi
+      DATABASE_PASSWORD_FILE: /secrets/database-password
+      JWT_SECRET_FILE: /secrets/jwt-secret
+      MANGOPAY_BASE_URL: https://api.sandbox.mangopay.com
+      MANGOPAY_CLIENT_ID: ${MANGOPAY_CLIENT_ID} 
+      MANGOPAY_CLIENT_PASSWORD_FILE: /secrets/mangopay-client-password 
+      CATALOGUE_BASE_URL: http://catalogueapi:5000/
+      INGEST_BASE_URL: http://ingest:5000/
+      MAILER_BASE_URL: http://mailer:8105/
+      MESSENGER_BASE_URL: http://messenger:8110/
+      RATING_BASE_URL: ""
+      RATING_USERNAME: ""
+      RATING_PASSWORD_FILE: ""
+      PID_BASE_URL: http://pid:5000/
+      PROFILE_BASE_URL: http://profile:5000/
+      ELASTICSEARCH_BASE_URL: http://elasticsearch:9200
+      ELASTICSEARCH_INDICES_ASSETS_INDEX_NAME: assets
+      ELASTICSEARCH_INDICES_ASSETS_VIEW_INDEX_NAME: assets_view
+      ELASTICSEARCH_INDICES_ASSETS_VIEW_AGGREGATE_INDEX_NAME: assets_view_aggregate 
+      ELASTICSEARCH_INDICES_PROFILES_INDEX_NAME: profiles
+      BPM_REST_BASE_URL: http://bpm-server:8000/engine-rest
+      BPM_REST_USERNAME: admin
+      BPM_REST_PASSWORD_FILE: /secrets/camunda-admin-password  
+      JUPYTERHUB_URL: http://jupyterhub/
+      JUPYTERHUB_API_URL: http://jupyterhub/hub/api
+      JUPYTERHUB_API_KEY_FILE: /secrets/jupyterhub-access-token
+      GEOSERVER_BASE_URL: http://geoserver:8080/geoserver
+      CONTRACT_SIGNPDF_KEYSTORE: /secrets/signatory-keystore
+      CONTRACT_SIGNPDF_KEYSTORE_PASSWORD_FILE: /secrets/signatory-keystore-password
+      CONTRACT_SIGNPDF_KEY_ALIAS: '1'
+    ports: ['127.0.0.1:30080:8000']
+
