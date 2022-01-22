@@ -7,5 +7,5 @@
 *.swp
 *.log
 
-.elastic-setup-*
+.elasticsearch-setup-*
 

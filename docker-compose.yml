@@ -432,3 +432,24 @@ services:
       CONTRACT_SIGNPDF_KEY_ALIAS: '1'
     ports: ['127.0.0.1:30080:8000']
 
+  'web':
+    image: nginx:1.21-alpine
+    networks:
+      internal_network: {}
+    volumes: 
+    - type: bind
+      source: ./files/web/nginx/conf.d/
+      target: /etc/nginx/conf.d/
+      read_only: true
+    - type: bind
+      source: ./secrets/web/server.pem
+      target: /secrets/server.pem
+      read_only: true
+    - type: bind
+      source: ./logs/web/
+      target: /var/log/nginx
+    environment:
+      []
+    ports: ['8443:443']
+
+
